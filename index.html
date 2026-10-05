@@ -50,6 +50,17 @@
     @media(hover:hover){.card:hover{transform:translateY(-5px);border-color:rgba(108,140,255,.55);box-shadow:0 12px 35px rgba(0,0,0,.18)}.btn:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(108,140,255,.28)}.skill:hover span{transform:translateY(-3px) rotate(6deg)}}
     .skill span{transition:transform .25s ease}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}.reveal-pending{opacity:1;transform:none}}
+
+    /* Feedback on every interactive control, including touch and keyboard. */
+    a[href],button{position:relative;isolation:isolate;touch-action:manipulation;transition:transform .22s ease,color .22s ease,box-shadow .22s ease,filter .22s ease}
+    .brand,.nav-links a,a.project-link{display:inline-block}
+    a[href]:active,button:active,.btn:active{transform:scale(.94);filter:brightness(1.15)}
+    a[href]:focus-visible,button:focus-visible{outline:2px solid #5de0ff;outline-offset:5px}
+    .btn{overflow:hidden}
+    .control-ripple{position:absolute;pointer-events:none;z-index:2;width:18px;height:18px;border-radius:50%;border:2px solid rgba(166,211,255,.9);background:rgba(151,191,255,.18);transform:translate(-50%,-50%);animation:controlRipple .55s ease-out forwards}
+    @keyframes controlRipple{to{transform:translate(-50%,-50%) scale(7);opacity:0}}
+    @media(hover:hover){a[href]:hover,button:hover{filter:brightness(1.14)}.brand:hover,a.project-link:hover{transform:translateY(-2px);color:#5de0ff}.nav-links a:hover{transform:translateY(-2px)}}
+    @media(prefers-reduced-motion:reduce){a[href]:active,button:active,.btn:active,a[href]:hover{transform:none}.control-ripple{display:none}}
   </style>
 </head>
 <body>
@@ -83,6 +94,21 @@
         observer.observe(el);
       });
     }
+
+    document.querySelectorAll('a[href],button').forEach(control=>{
+      control.addEventListener('click',event=>{
+        if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+        control.querySelectorAll('.control-ripple').forEach(ripple=>ripple.remove());
+        const bounds=control.getBoundingClientRect();
+        const ripple=document.createElement('span');
+        ripple.className='control-ripple';
+        ripple.setAttribute('aria-hidden','true');
+        ripple.style.left=(event.detail===0?bounds.width/2:event.clientX-bounds.left)+'px';
+        ripple.style.top=(event.detail===0?bounds.height/2:event.clientY-bounds.top)+'px';
+        control.appendChild(ripple);
+        setTimeout(()=>ripple.remove(),600);
+      });
+    });
   </script>
 </body>
 </html>
