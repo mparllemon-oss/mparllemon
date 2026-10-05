@@ -28,6 +28,28 @@
     .contact{text-align:center;background:linear-gradient(145deg,rgba(108,140,255,.13),rgba(143,92,255,.08));border:1px solid var(--line);border-radius:28px;padding:50px 24px}.contact p{color:var(--muted);max-width:650px;margin:12px auto 24px}footer{padding:32px 0 45px;color:var(--muted);text-align:center}
     @media(max-width:850px){.hero-grid,.about-grid{grid-template-columns:1fr}.skills-grid{grid-template-columns:repeat(2,1fr)}.projects-grid{grid-template-columns:1fr}.hero{padding-top:55px}.profile-card{min-height:340px}}
     @media(max-width:600px){.nav-inner{height:auto;padding:16px 0;align-items:flex-start}.nav-links{gap:12px;justify-content:flex-end}.nav-links a{font-size:.84rem}h1{letter-spacing:-1px}}
+
+    /* Lightweight animations for phone and desktop. */
+    section[id]{scroll-margin-top:90px}
+    @keyframes riseIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes orbFloat{0%,100%{transform:translate(-50%,0) scale(1)}50%{transform:translate(-50%,-18px) scale(1.04)}}
+    @keyframes nameShimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    .hero-grid>div:first-child>*{animation:riseIn .8s ease both}
+    .hero-grid h1{animation-delay:.12s}.hero-grid>div:first-child>p{animation-delay:.24s}.hero-grid .buttons{animation-delay:.36s}
+    .profile-card{animation:riseIn 1s .2s ease both}
+    h1 span{background-size:200% 100%;animation:nameShimmer 7s ease-in-out infinite}
+    .orb{animation:orbFloat 6s ease-in-out infinite}
+    .reveal-pending{opacity:0;transform:translateY(24px)}
+    .reveal-pending.reveal-visible{opacity:1;transform:translateY(0);transition:opacity .7s ease var(--reveal-delay,0ms),transform .7s ease var(--reveal-delay,0ms)}
+    .card{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+    .btn{transition:transform .25s ease,box-shadow .25s ease}
+    .nav-links a{position:relative;transition:color .2s ease}
+    .nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:-5px;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .25s ease}
+    .nav-links a:hover::after,.nav-links a:focus-visible::after{transform:scaleX(1)}
+    .btn:focus-visible,.project-link:focus-visible,.nav-links a:focus-visible{outline:2px solid #5de0ff;outline-offset:5px}
+    @media(hover:hover){.card:hover{transform:translateY(-5px);border-color:rgba(108,140,255,.55);box-shadow:0 12px 35px rgba(0,0,0,.18)}.btn:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(108,140,255,.28)}.skill:hover span{transform:translateY(-3px) rotate(6deg)}}
+    .skill span{transition:transform .25s ease}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}.reveal-pending{opacity:1;transform:none}}
   </style>
 </head>
 <body>
@@ -40,6 +62,27 @@
     <section id="contact"><div class="container"><div class="contact"><h2>Let's build something great.</h2><p>You can add your email, WhatsApp, GitHub, Instagram, or any other contact link here.</p><a class="btn primary" href="mailto:your@email.com">Email Me</a></div></div></section>
   </main>
   <footer><div class="container">© <span id="year"></span> Hussain Shah. Built with HTML, CSS & JavaScript.</div></footer>
-  <script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+
+  <script>
+    document.getElementById('year').textContent=new Date().getFullYear();
+    if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const observer=new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{
+          if(entry.isIntersecting){
+            entry.target.classList.add('reveal-visible');
+            observer.unobserve(entry.target);
+            setTimeout(()=>entry.target.classList.remove('reveal-pending','reveal-visible'),1100);
+          }
+        });
+      },{threshold:0.08});
+      document.querySelectorAll('.section-head,.card,.contact').forEach(el=>{
+        const siblings=el.parentElement.children;
+        const index=Array.prototype.indexOf.call(siblings,el);
+        el.style.setProperty('--reveal-delay',Math.min(index,3)*90+'ms');
+        el.classList.add('reveal-pending');
+        observer.observe(el);
+      });
+    }
+  </script>
 </body>
 </html>
