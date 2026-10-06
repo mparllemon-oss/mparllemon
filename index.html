@@ -74,6 +74,13 @@ h1.word-heading .heading-word{display:inline-block;background:none;color:var(--t
 h1.word-heading .name-word{background:linear-gradient(90deg,var(--accent),#9b75ff,#5de0ff);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:wordDrop .75s cubic-bezier(.22,1,.36,1) var(--word-delay) both,nameShimmer 7s ease-in-out infinite}
 @keyframes wordDrop{from{opacity:0;transform:translateY(-65px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){h1.word-heading .heading-word{animation:none;opacity:1;transform:none}}
+
+/* Word-by-word entrance for all portfolio text. */
+.text-drop-word{display:inline-block}
+.text-drop-word.text-drop-ready{opacity:0;transform:translateY(-30px)}
+.text-drop-word.text-drop-play{animation:portfolioWordDrop .65s cubic-bezier(.22,1,.36,1) var(--text-delay,0s) both}
+@keyframes portfolioWordDrop{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.text-drop-word.text-drop-ready{opacity:1;transform:none}.text-drop-word.text-drop-play{animation:none}}
 </style>
 </head>
 <body>
@@ -122,6 +129,51 @@ h1.word-heading .name-word{background:linear-gradient(90deg,var(--accent),#9b75f
         setTimeout(()=>ripple.remove(),600);
       });
     });
+  </script>
+
+  <script>
+    // Preserve links and existing markup while animating each visible word.
+    if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const textGroups=new Map();
+      const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{
+        acceptNode(node){
+          if(!node.textContent.trim() || node.parentElement.closest('script,style,.word-heading,.control-ripple'))return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      });
+      const nodes=[];
+      while(walker.nextNode())nodes.push(walker.currentNode);
+      nodes.forEach(node=>{
+        const group=node.parentElement.closest('p,h2,h3,a,button,.eyebrow,.skill,.tag,footer') || node.parentElement;
+        const words=textGroups.get(group) || [];
+        const fragment=document.createDocumentFragment();
+        node.textContent.split(/(\s+)/).forEach(part=>{
+          if(!part)return;
+          if(/^\s+$/.test(part)){fragment.appendChild(document.createTextNode(part));return;}
+          const word=document.createElement('span');
+          word.className='text-drop-word text-drop-ready';
+          word.textContent=part;
+          word.style.setProperty('--text-delay',Math.min(words.length*.07,1.4)+'s');
+          words.push(word);
+          fragment.appendChild(word);
+        });
+        textGroups.set(group,words);
+        node.replaceWith(fragment);
+      });
+      const textObserver=new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{
+          if(!entry.isIntersecting)return;
+          const words=textGroups.get(entry.target);
+          words.forEach(word=>word.classList.add('text-drop-play'));
+          textObserver.unobserve(entry.target);
+          setTimeout(()=>words.forEach(word=>{
+            word.classList.remove('text-drop-ready','text-drop-play');
+            word.style.removeProperty('--text-delay');
+          }),2200);
+        });
+      },{threshold:0,rootMargin:'0px 0px -20px 0px'});
+      textGroups.forEach((words,group)=>textObserver.observe(group));
+    }
   </script>
 </body>
 </html>
