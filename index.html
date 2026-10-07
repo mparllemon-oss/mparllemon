@@ -2,16 +2,35 @@
 <html lang="en">
 <head>
 <style>html.demo-checking body{visibility:hidden}</style>
-<script>
-document.documentElement.classList.add('demo-checking');
-function checkDemoSession(){
-  let active=false;
-  try{active=sessionStorage.getItem('hussain-portfolio-demo')==='active';}catch(error){}
-  if(!active){location.replace('login.html');return;}
+<script>document.documentElement.classList.add('demo-checking');</script>
+<script type="module">
+import {loadFirebaseAuth,authError} from './firebase-auth.js';
+let sdk=null;
+function showConnectionError(){
   document.documentElement.classList.remove('demo-checking');
+  document.body.replaceChildren();
+  const panel=document.createElement('main');
+  panel.style.cssText='max-width:520px;margin:15vh auto;padding:30px';
+  const heading=document.createElement('h1');heading.style.fontSize='28px';heading.textContent='Could not connect';
+  const text=document.createElement('p');text.textContent='Please check your internet and refresh to open your portfolio.';
+  const link=document.createElement('a');link.href='login.html';link.textContent='Back to login';link.className='btn primary';
+  panel.append(heading,text,link);document.body.append(panel);
 }
-checkDemoSession();
-window.addEventListener('pageshow',checkDemoSession);
+const timer=setTimeout(()=>{if(!sdk)showConnectionError();},20000);
+loadFirebaseAuth().then(async firebase=>{
+  await firebase.auth.authStateReady();sdk=firebase;clearTimeout(timer);
+  firebase.onAuthStateChanged(firebase.auth,user=>{
+    if(!user){location.replace('login.html');return;}
+    document.documentElement.classList.remove('demo-checking');
+  });
+  const logout=document.getElementById('demo-logout');
+  logout.addEventListener('click',async event=>{
+    event.preventDefault();
+    try{await firebase.signOut(firebase.auth);location.replace('login.html');}
+    catch(error){logout.title=authError(error);logout.textContent='Retry log out';}
+  });
+  window.addEventListener('pageshow',()=>{if(sdk&&!sdk.auth.currentUser)location.replace('login.html');});
+}).catch(()=>{clearTimeout(timer);showConnectionError();});
 </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -208,11 +227,5 @@ h1.word-heading .name-word{background:linear-gradient(90deg,var(--accent),#9b75f
       textGroups.forEach((words,group)=>textObserver.observe(group));
     }
   </script>
-<script>
-document.getElementById('demo-logout').addEventListener('click',event=>{
-  event.preventDefault();
-  try{sessionStorage.removeItem('hussain-portfolio-demo');}catch(error){}
-  location.replace('login.html');
-});
-</script></body>
+</body>
 </html>
