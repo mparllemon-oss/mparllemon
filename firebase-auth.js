@@ -6,7 +6,7 @@ export function loadFirebaseAuth(){
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js')
   ]).then(([appSdk,authSdk])=>{
     const app=appSdk.initializeApp(config);
-    return {...authSdk,auth:authSdk.getAuth(app)};
+    return {...authSdk,app,auth:authSdk.getAuth(app)};
   });
   return loading;
 }

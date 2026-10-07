@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function owner() { return signedIn() && exists(/databases/$(database)/documents/scoreAdmins/$(request.auth.uid)) && get(/databases/$(database)/documents/scoreAdmins/$(request.auth.uid)).data.enabled == true; }
+    match /scoreAdmins/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list, write: if false;
+    }
+    match /gameScores/{session} {
+      allow get: if signedIn() && (!exists(/databases/$(database)/documents/gameScores/$(session)) || resource.data.uid == request.auth.uid || owner());
+      allow list: if signedIn() && (resource.data.uid == request.auth.uid || owner());
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll(['uid','playerName','game','score','playedAt'])
+        && request.resource.data.keys().hasOnly(['uid','playerName','game','score','playedAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.playerName is string
+        && request.resource.data.playerName.size() > 0
+        && request.resource.data.playerName.size() <= 80
+        && request.resource.data.playerName == request.auth.token.name
+        && request.resource.data.game == 'snake'
+        && request.resource.data.score is int
+        && request.resource.data.score >= 0
+        && request.resource.data.score <= 397
+        && request.resource.data.playedAt == request.time;
+      allow update, delete: if false;
+    }
+  }
+}
