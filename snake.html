@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Snake Game - Mobile Buttons</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111;color:white;font-family:Arial,sans-serif;touch-action:manipulation}
+.game-wrap{text-align:center;width:min(95vw,520px)}
+.info{display:flex;justify-content:space-between;margin:0 auto 10px;font-size:20px;font-weight:bold}
+canvas{background:#222;border:3px solid #fff;max-width:90vw;width:420px;height:auto;display:block;margin:auto}
+#message{min-height:22px;margin:8px}
+button{padding:10px 22px;font-size:16px;cursor:pointer;border:0;border-radius:10px}
+.controls{width:190px;margin:14px auto 8px;display:grid;grid-template-columns:repeat(3,60px);gap:6px;justify-content:center}
+.controls button{width:60px;height:52px;padding:0;font-size:25px;font-weight:bold;background:#fff;color:#111}
+.controls .up{grid-column:2}.controls .left{grid-column:1;grid-row:2}
+.controls .down{grid-column:2;grid-row:2}.controls .right{grid-column:3;grid-row:2}
+a{color:#9fe8b8} [hidden]{display:none!important} button:disabled{opacity:.5;cursor:default} #status{min-height:44px;margin:8px} input{max-width:100%;padding:10px} .game-wrap{padding:16px 0}
+</style>
+</head>
+<body>
+<div class="game-wrap">
+<a href="index.html#projects">← Portfolio</a><h1>🐍 Snake Game</h1><p id="player">Connecting your account…</p>
+<div class="info"><span id="level">Level 1</span><span>Score: <strong id="score">0</strong></span></div>
+<div id="status" role="status" aria-live="polite">Connecting…</div>
+<canvas id="board" aria-label="Snake game board" width="400" height="400"></canvas>
+
+<div class="controls">
+  <button class="up" data-dir="up" aria-label="Move up">⬆️</button>
+  <button class="left" data-dir="left" aria-label="Move left">⬅️</button>
+  <button class="down" data-dir="down" aria-label="Move down">⬇️</button>
+  <button class="right" data-dir="right" aria-label="Move right">➡️</button>
+</div>
+<button id="start" disabled>Play</button> <button id="pause" disabled>Pause</button> <button id="retry" hidden>Retry saving</button><p><a href="scores.html">Player Scores</a></p><form id="name-form" hidden><label for="player-name">Your player name</label><input id="player-name" maxlength="80" required autocomplete="name"><button>Save name</button></form>
+</div>
+
+<script type="module" src="snake.js"></script>
+</body>
+</html>
